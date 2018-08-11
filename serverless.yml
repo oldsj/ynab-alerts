@@ -1,0 +1,56 @@
+
+service: ynab-alerts
+
+provider:
+  name: aws
+  runtime: python3.6
+  environment:
+    DYNAMODB_TABLE: ${self:service}-${opt:stage, self:provider.stage}
+  stage: dev
+  region: us-east-1
+  profile: personal
+  iamRoleStatements:
+    - Effect: Allow
+      Action:
+        - dynamodb:*
+      Resource: "arn:aws:dynamodb:${opt:region, self:provider.region}:*:table/${self:provider.environment.DYNAMODB_TABLE}"
+    
+    - Effect: "Allow"
+      Action:
+        - "sns:Publish"
+      Resource:
+        - "*"
+package:
+  include:
+    - config.yml
+functions:
+  entry:
+    handler: entry.entry
+    events:
+      - http:
+          path: /
+          method: get
+      - schedule: rate(1 hour)
+resources:
+  Resources:
+    StateTable:
+      Type: 'AWS::DynamoDB::Table'
+      DeletionPolicy: Delete
+      Properties:
+        AttributeDefinitions:
+          -
+            AttributeName: id
+            AttributeType: S
+        KeySchema:
+          -
+            AttributeName: id
+            KeyType: HASH
+        ProvisionedThroughput:
+          ReadCapacityUnits: 1
+          WriteCapacityUnits: 1
+        TableName: ${self:provider.environment.DYNAMODB_TABLE}
+plugins:
+  - serverless-python-requirements
+custom:
+  pythonRequirements:
+    dockerizePip: true
