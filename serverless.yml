@@ -14,7 +14,10 @@ provider:
       Action:
         - dynamodb:*
       Resource: "arn:aws:dynamodb:${opt:region, self:provider.region}:*:table/${self:provider.environment.DYNAMODB_TABLE}"
-    
+    - Effect: Allow
+      Action:
+        - "ssm:GetParameter"
+      Resource: "*"
     - Effect: "Allow"
       Action:
         - "sns:Publish"

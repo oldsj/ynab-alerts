@@ -1,6 +1,7 @@
 node_modules/
 phone_numbers.yml
 .requirements/
+.vscode/
 
 # Distribution / packaging
 .Python
